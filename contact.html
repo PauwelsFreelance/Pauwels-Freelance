@@ -1,98 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Get in touch about a web development project — Pauwels Freelance.">
-<title>Contact — Pauwels Freelance</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="icon" href="assets/logo.png">
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Get in touch about a web development project — Pauwels Freelance, Brno.">
+  <title>Contact — Pauwels Freelance</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="icon" href="assets/logo.png">
+  <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
-<div class="frame">
+  <div class="frame">
 
-  <header class="topbar">
-    <a class="brand" href="index.html">
-      <img class="brand-logo" src="assets/logo.png" alt="Pauwels Freelance">
-      <span class="brand-word">Pauwels Freelance<span>Web Development</span></span>
-    </a>
-    <nav class="mainnav" id="mainnav">
-      <a href="index.html">About</a>
-      <a href="pricing.html">Pricing</a>
-      <a href="portfolio.html">Portfolio</a>
-      <a href="contact.html" class="active">Contact</a>
-    </nav>
-    <button class="nav-toggle" aria-label="Toggle menu">☰</button>
-  </header>
+    <header class="topbar">
+      <a class="brand" href="index.html">
+        <img class="brand-logo" src="assets/logo.png" alt="Pauwels Freelance">
+        <span class="brand-word">Pauwels Freelance<span>Web Development</span></span>
+      </a>
+      <nav class="mainnav" id="mainnav">
+        <a href="index.html">About</a>
+        <a href="pricing.html">Pricing</a>
+        <a href="portfolio.html">Portfolio</a>
+        <a href="contact.html" class="active">Contact</a>
+      </nav>
+      <button class="nav-toggle" aria-label="Toggle menu">☰</button>
+    </header>
 
-  <div class="pathbar">pauwelsfreelance.com/<b>contact</b></div>
+    <div class="pathbar">pauwelsfreelance.com/<b>contact</b></div>
 
-  <main>
-    <section class="page">
-      <p class="eyebrow">Contact</p>
-      <h1>Tell me about<br>your <em>project</em>.</h1>
+    <main>
+      <section class="page">
+        <p class="eyebrow">Contact</p>
+        <h1>Tell me about<br>your <em>project</em>.</h1>
 
-      <div class="contact-grid">
-        <div>
-          <div class="selected-tier-banner" id="tierBanner">You're asking about: <b id="tierBannerText"></b></div>
-          <form id="contactForm">
-            <div>
-              <label for="name">Name</label>
-              <input type="text" id="name" required>
+        <div class="contact-grid">
+
+          <div>
+            <div class="selected-tier-banner" id="tierBanner">You're asking about: <b id="tierBannerText"></b></div>
+
+            <form id="contactForm">
+              <div>
+                <label for="name">Name</label>
+                <input type="text" id="name" required>
+              </div>
+
+              <div>
+                <label for="email">Email</label>
+                <input type="email" id="email" required>
+              </div>
+
+              <div>
+                <label for="projectType">What are you looking for?</label>
+                <select id="projectType">
+                  <option>Small project — one-page site</option>
+                  <option>Normal project — multi-page + database</option>
+                  <option>Large project — platform + admin panel</option>
+                  <option>Maintenance</option>
+                  <option>Consultation</option>
+                  <option>Not sure yet</option>
+                </select>
+                <div class="field-note" id="unsureNote">
+                  No problem — the first call is free. If we then work out the scope together, that time is billed at the
+                  consultation rate of <b>890 Kč / hour</b>.
+                </div>
+              </div>
+
+              <div>
+                <label for="message">Project details</label>
+                <textarea id="message" placeholder="What are you building, and when do you need it live?"></textarea>
+              </div>
+
+              <div>
+                <button type="submit" class="btn">Send message</button>
+                <div class="form-status" id="formStatus">Opening your email app with this message ready to send.</div>
+              </div>
+            </form>
+          </div>
+
+          <div class="contact-side">
+            <div class="direct">
+              <h4>Email</h4>
+              <a href="mailto:info@pauwelsfreelance.com">info@pauwelsfreelance.com</a>
             </div>
-            <div>
-              <label for="email">Email</label>
-              <input type="email" id="email" required>
+            <div class="direct">
+              <h4>Response time</h4>
+              <p>Usually within 1–2 business days.</p>
             </div>
-            <div>
-              <label for="projectType">What are you looking for?</label>
-              <select id="projectType">
-                <option>Small project — one-page site</option>
-                <option>Normal project — multi-page + database</option>
-                <option>Large project — platform + admin panel</option>
-                <option>Maintenance</option>
-                <option>Consultation</option>
-                <option>Not sure yet</option>
-              </select>
+            <div class="direct">
+              <h4>How it starts</h4>
+              <p>A short call, a fixed quote, then work begins. The call costs nothing.</p>
             </div>
-            <div>
-              <label for="message">Project details</label>
-              <textarea id="message" placeholder="What are you building, and when do you need it live?"></textarea>
-            </div>
-            <div>
-              <button type="submit" class="btn">Send message</button>
-              <div class="form-status" id="formStatus" style="margin-top:12px;">Opening your email app with this message ready to send.</div>
-            </div>
-          </form>
+          </div>
+
         </div>
+      </section>
+    </main>
 
-        <div class="contact-side">
-          <div class="direct">
-            <h4>Email</h4>
-            <a href="mailto:info@pauwelsfreelance.com">info@pauwelsfreelance.com</a>
-          </div>
-          <div class="direct">
-            <h4>Response time</h4>
-            <p>Usually within 1–2 business days.</p>
-          </div>
-          <div class="direct">
-            <h4>How it starts</h4>
-            <p>A short call, a fixed quote, then work begins.</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
+    <footer>
+      <span>© 2026 Pauwels Freelance</span>
+      <span><a href="index.html">Back to start</a></span>
+    </footer>
 
-  <footer>
-    <span>© 2026 Pauwels Freelance</span>
-    <span><a href="index.html">Back to start</a></span>
-  </footer>
-
-</div>
-<script src="script.js"></script>
+  </div>
+  <script src="script.js"></script>
 </body>
+
 </html>

@@ -1,5 +1,6 @@
-// Mobile nav toggle
 document.addEventListener('DOMContentLoaded', function () {
+
+  /* ---------- Mobile nav toggle ---------- */
   var toggle = document.querySelector('.nav-toggle');
   var nav = document.getElementById('mainnav');
   if (toggle && nav) {
@@ -8,14 +9,18 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  // Contact page: read ?type= from the URL and pre-select it
+  /* ---------- Contact page: pre-select project type from ?type= ---------- */
   var select = document.getElementById('projectType');
   if (select) {
     var params = new URLSearchParams(window.location.search);
     var type = params.get('type');
+
     if (type) {
-      var match = Array.from(select.options).find(function (o) { return o.value === type; });
+      var match = Array.from(select.options).find(function (o) {
+        return o.value === type;
+      });
       if (!match) {
+        // A specific portfolio project — add it as a one-off option
         var temp = document.createElement('option');
         temp.textContent = type;
         temp.value = type;
@@ -30,26 +35,45 @@ document.addEventListener('DOMContentLoaded', function () {
         banner.classList.add('show');
       }
     }
+
+    /* ---------- Show consultation-rate note for "Not sure yet" ---------- */
+    var unsureNote = document.getElementById('unsureNote');
+    if (unsureNote) {
+      var toggleNote = function () {
+        unsureNote.classList.toggle('show', select.value === 'Not sure yet');
+      };
+      select.addEventListener('change', toggleNote);
+      toggleNote(); // run once on load, in case ?type=Not+sure+yet
+    }
   }
 
-  // Contact form -> mailto fallback (no backend attached yet)
+  /* ---------- Contact form -> mailto (no backend yet) ---------- */
   var form = document.getElementById('contactForm');
   if (form) {
     form.addEventListener('submit', function (e) {
       e.preventDefault();
+
       var name = document.getElementById('name').value;
       var email = document.getElementById('email').value;
       var type = document.getElementById('projectType').value;
       var message = document.getElementById('message').value;
+
       var subject = encodeURIComponent('New inquiry: ' + type);
-      var body = encodeURIComponent('Name: ' + name + '\nEmail: ' + email + '\nInterested in: ' + type + '\n\n' + message);
+      var body = encodeURIComponent(
+        'Name: ' + name + '\n' +
+        'Email: ' + email + '\n' +
+        'Interested in: ' + type + '\n\n' +
+        message
+      );
+
       window.location.href = 'mailto:info@pauwelsfreelance.com?subject=' + subject + '&body=' + body;
+
       var status = document.getElementById('formStatus');
       if (status) status.classList.add('show');
     });
   }
 
-  // Auto-calculate experience from the start date
+  /* ---------- Auto-calculated experience ---------- */
   var exp = document.getElementById('experience');
   if (exp && exp.dataset.start) {
     var start = new Date(exp.dataset.start);
@@ -80,4 +104,5 @@ document.addEventListener('DOMContentLoaded', function () {
 
     exp.textContent = text;
   }
+
 });
