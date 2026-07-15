@@ -1,20 +1,15 @@
 /* ==========================================================================
-   CONTACT FORM ENDPOINT — the only line you change when you switch hosts.
-   --------------------------------------------------------------------------
-   GitHub Pages (now):   a third-party form service, e.g.
-                         'https://api.web3forms.com/submit'
-                         'https://formspree.io/f/YOUR_ID'
-   Český hosting (later): your own PHP script, e.g.
-                         'send.php'
+   Pauwels Freelance — site script
    ========================================================================== */
-var FORM_ENDPOINT = 'https://api.web3forms.com/submit';
 
-/* Only needed for Web3Forms — paste the access key from their dashboard.
-   Leave as null if you use Formspree or your own send.php. */
-var WEB3FORMS_KEY = 'PASTE-YOUR-ACCESS-KEY-HERE';
+/* Contact form endpoint. On Český hosting this is your own PHP script. */
+var FORM_ENDPOINT = 'send.php';
+
+/* Only used if you ever switch to Web3Forms. Leave null for send.php. */
+var WEB3FORMS_KEY = null;
 
 /* Fallback if the endpoint is unreachable — opens the visitor's mail app. */
-var CONTACT_EMAIL = 'info@pauwelsfreelance.com';
+var CONTACT_EMAIL = 'info@pauwels-freelance.cz';
 
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -30,6 +25,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   /* ---------- Contact page: pre-select project type from ?type= ---------- */
   var select = document.getElementById('projectType');
+  var unsureNote = document.getElementById('unsureNote');
+
   if (select) {
     var params = new URLSearchParams(window.location.search);
     var type = params.get('type');
@@ -54,8 +51,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
-    /* ---------- "Not sure yet" -> show consultation-rate note ---------- */
-    var unsureNote = document.getElementById('unsureNote');
     if (unsureNote) {
       var toggleNote = function () {
         unsureNote.classList.toggle('show', select.value === 'Not sure yet');
@@ -85,14 +80,12 @@ document.addEventListener('DOMContentLoaded', function () {
       var message = document.getElementById('message').value.trim();
       var honeypot = document.getElementById('company').value;
 
-      /* Bot filled the hidden field — pretend it worked, send nothing. */
       if (honeypot) {
         setStatus('Thanks — your message has been sent.', 'ok');
         form.reset();
         return;
       }
 
-      /* Client-side validation (the server must validate too). */
       if (!name || !email || !message) {
         setStatus('Please fill in your name, email and a short description.', 'error');
         return;
@@ -110,21 +103,17 @@ document.addEventListener('DOMContentLoaded', function () {
         email: email,
         projectType: type,
         message: message,
-        subject: 'New inquiry: ' + type,
-        from_name: 'Pauwels Freelance website'
+        subject: 'New inquiry: ' + type
       };
       if (WEB3FORMS_KEY) payload.access_key = WEB3FORMS_KEY;
 
       fetch(FORM_ENDPOINT, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify(payload)
       })
         .then(function (res) {
-          if (!res.ok) throw new Error('Bad response: ' + res.status);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
           return res.json().catch(function () { return {}; });
         })
         .then(function () {
@@ -137,8 +126,6 @@ document.addEventListener('DOMContentLoaded', function () {
           console.error('Form submission failed:', err);
           submitBtn.disabled = false;
 
-          /* Endpoint unreachable — fall back to the visitor's email app
-             rather than silently losing the lead. */
           var subject = encodeURIComponent('New inquiry: ' + type);
           var body = encodeURIComponent(
             'Name: ' + name + '\n' +

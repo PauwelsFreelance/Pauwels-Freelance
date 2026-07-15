@@ -1,0 +1,10 @@
+# NEVER commit the mailbox password
+config.php
+
+# Composer libraries — installed on the server, not versioned
+/vendor/
+composer.phar
+
+# OS junk
+.DS_Store
+Thumbs.db

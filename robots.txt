@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /send.php
+Disallow: /vendor/
+
+Sitemap: https://pauwels-freelance.cz/sitemap.xml

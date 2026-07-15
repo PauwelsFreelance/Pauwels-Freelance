@@ -1,0 +1,7 @@
+{
+  "name": "pauwels/freelance-site",
+  "description": "Pauwels Freelance — portfolio site",
+  "require": {
+    "phpmailer/phpmailer": "^6.9"
+  }
+}
