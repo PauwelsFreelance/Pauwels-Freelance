@@ -66,8 +66,10 @@
       <section class="page">
         <p class="eyebrow">Pricing</p>
         <h1>Get a feel for<br>your <em>price</em>.</h1>
-        <p class="lede">Every project starts with a short call to confirm what you actually need. Pick what applies
-          below for a rough starting range — you'll get a fixed quote before any work begins.</p>
+        <p class="lede">Every project begins with you selecting your requirements below. We'll then be in touch to
+          review your selections together, after which you'll receive an accurate, fixed price for the work.</p>
+        <p class="vat-disclaimer">All prices are shown excluding VAT (DPH), with the amount including 21% VAT
+          displayed underneath.</p>
 
         <!-- ===== Step 1: project size ===== -->
         <h3 class="calc-label">1 — What kind of project is this?</h3>
@@ -76,7 +78,8 @@
           <div class="tier selectable" data-tier="small" data-name="Small project — one-page site">
             <div class="tier-tag">Small</div>
             <h3>One-page site</h3>
-            <div class="tier-price">from 9 900 Kč<small>fixed price · about 1–2 weeks</small></div>
+            <div class="tier-price">from 9 900 Kč<span class="vat-line">11 979 Kč incl. 21% VAT</span><small>fixed
+                price · about 1–2 weeks</small></div>
             <ul>
               <li>Single-page custom website</li>
               <li>Works on phone, tablet and desktop</li>
@@ -89,7 +92,8 @@
           <div class="tier selectable" data-tier="normal" data-name="Normal project — multi-page + database">
             <div class="tier-tag">Normal</div>
             <h3>Multi-page + database</h3>
-            <div class="tier-price">from 24 900 Kč<small>fixed price · about 3–5 weeks</small></div>
+            <div class="tier-price">from 24 900 Kč<span class="vat-line">30 129 Kč incl. 21% VAT</span><small>fixed
+                price · about 3–5 weeks</small></div>
             <ul>
               <li>Up to 5 pages</li>
               <li>Database connection for forms, content or listings</li>
@@ -102,7 +106,8 @@
           <div class="tier selectable" data-tier="large" data-name="Large project — platform + admin panel">
             <div class="tier-tag">Large</div>
             <h3>Platform + admin panel</h3>
-            <div class="tier-price">from 54 900 Kč<small>fixed price · scoped on a call</small></div>
+            <div class="tier-price">from 54 900 Kč<span class="vat-line">66 429 Kč incl. 21% VAT</span><small>fixed
+                price · scoped on a call</small></div>
             <ul>
               <li>5+ pages, built to grow</li>
               <li>Full database behind the site</li>
@@ -116,14 +121,18 @@
 
         <!-- ===== Step 2: add-ons ===== -->
         <h3 class="calc-label">2 — Anything else you need?</h3>
+        <p class="preset-note" id="presetNote">Choose a project size above to see commonly included items
+          pre-selected for you — adjust anything to fit your project.</p>
         <div id="calcCategories"></div>
 
         <!-- ===== Estimate ===== -->
         <div class="estimate-box">
           <p class="calc-label">Your estimate</p>
           <div class="estimate-value" id="estimateValue">Select a project size above</div>
-          <p class="estimate-note" id="estimateNote">Rough and indicative — some items may already be covered
-            depending on project size. I'll confirm the exact scope and a fixed price on our call.</p>
+          <div class="estimate-value-vat" id="estimateValueVat"></div>
+          <p class="estimate-note" id="estimateNote">Rough and indicative, excluding VAT — some items may already be
+            covered depending on project size. We'll confirm the exact scope and an accurate price after reviewing
+            your selections.</p>
           <button class="btn" id="getQuoteBtn" disabled>Get this quote</button>
         </div>
 
@@ -133,7 +142,7 @@
           <div class="addon">
             <div class="tier-tag">Optional add-on</div>
             <h3>Maintenance</h3>
-            <div class="rate">690 Kč / hour</div>
+            <div class="rate">690 Kč / hour<span class="vat-line">835 Kč incl. 21% VAT</span></div>
             <p>Updates, fixes and content changes after launch. No contract — you pay only for the hours used. Prefer to
               run it yourself? You get full access and documentation at handover. No lock-in either way.</p>
             <a class="btn ghost small" href="contact.html?type=Maintenance">Ask about maintenance</a>
@@ -142,10 +151,21 @@
           <div class="addon">
             <div class="tier-tag">Optional add-on</div>
             <h3>Consultation</h3>
-            <div class="rate">890 Kč / hour</div>
+            <div class="rate">890 Kč / hour<span class="vat-line">1 077 Kč incl. 21% VAT</span></div>
             <p>Not sure what you need yet, or want a second opinion on a site you already have? Book time to talk through
               scope, structure or a specific technical problem before committing to anything.</p>
             <a class="btn ghost small" href="contact.html?type=Consultation">Book a consultation</a>
+          </div>
+
+          <div class="addon">
+            <div class="tier-tag">Featured service</div>
+            <h3>HTML Email Templates</h3>
+            <div class="rate">from 2 900 Kč<span class="vat-line">3 509 Kč incl. 21% VAT</span></div>
+            <p>Branded, responsive email templates for newsletters, order confirmations or announcements — coded by
+              hand and tested across Gmail, Outlook and Apple Mail so they render correctly everywhere. Delivered as
+              reusable HTML you (or your newsletter tool) can send straight away.</p>
+            <a class="btn ghost small" href="contact.html?type=HTML%20Email%20Templates">Ask about email
+              templates</a>
           </div>
 
         </div>

@@ -182,44 +182,63 @@ document.addEventListener('DOMContentLoaded', function () {
   var calcTierGrid = document.getElementById('calcTierGrid');
   if (calcTierGrid) {
 
+    var VAT_RATE = 0.21;
     var TIER_BASE = { small: 9900, normal: 24900, large: 54900 };
 
     var CATEGORIES = [
       { title: 'Accounts & access', items: [
-        { k: 'login',   label: 'User sign-up & login',            add: 4000 },
-        { k: 'social',  label: 'Social login (Google, etc.)',     add: 2000 },
-        { k: 'roles',   label: 'Roles & permission levels',       add: 5000 },
-        { k: 'twofa',   label: 'Extra login security (2FA)',      add: 3000 }
+        { k: 'login',     label: 'User sign-up & login',              add: 4000 },
+        { k: 'social',    label: 'Social login (Google, etc.)',       add: 2000 },
+        { k: 'roles',     label: 'Roles & permission levels',         add: 5000 },
+        { k: 'twofa',     label: 'Extra login security (2FA)',        add: 3000 },
+        { k: 'pwreset',   label: 'Self-service password reset',       add: 1500 }
       ]},
       { title: 'Content & data', items: [
-        { k: 'blog',       label: 'Blog / news section',                add: 4000 },
-        { k: 'search',     label: 'Search or filtering across listings', add: 3500 },
+        { k: 'blog',       label: 'Blog / news section',                    add: 4000 },
+        { k: 'search',     label: 'Search or filtering across listings',    add: 3500 },
         { k: 'migration',  label: 'Migrating content from an existing site', add: 3000 },
-        { k: 'multilang',  label: 'Multiple languages',                 add: 6000 }
+        { k: 'multilang',  label: 'Multiple languages',                     add: 6000 },
+        { k: 'cms',        label: 'Editable content via admin panel',       add: 4500 },
+        { k: 'analytics',  label: 'Analytics & visitor reporting setup',    add: 1500 }
       ]},
       { title: 'Integrations', items: [
-        { k: 'payments',   label: 'Online payments',                add: 5000 },
-        { k: 'booking',    label: 'Booking / scheduling',           add: 4000 },
-        { k: 'newsletter', label: 'Newsletter or CRM connection',   add: 2500 },
-        { k: 'maps',       label: 'Maps or other third-party embeds', add: 1500 }
+        { k: 'payments',      label: 'Online payments',                          add: 5000 },
+        { k: 'booking',       label: 'Booking / scheduling',                     add: 4000 },
+        { k: 'newsletter',    label: 'Newsletter or CRM connection',             add: 2500 },
+        { k: 'maps',          label: 'Maps or other third-party embeds',         add: 1500 },
+        { k: 'emailtemplates',label: 'Custom HTML email templates (branded, tested across clients)', add: 3500 },
+        { k: 'chat',          label: 'Live chat widget',                         add: 2000 }
       ]},
       { title: 'Trust & security', items: [
-        { k: 'hardening', label: 'Extra security hardening',   add: 3500 },
-        { k: 'gdpr',      label: 'GDPR & cookie consent',      add: 3000 },
-        { k: 'backups',   label: 'Automated backups',          add: 2000 }
+        { k: 'hardening',    label: 'Extra security hardening',        add: 3500 },
+        { k: 'gdpr',         label: 'GDPR & cookie consent',           add: 3000 },
+        { k: 'backups',      label: 'Automated backups',               add: 2000 },
+        { k: 'accessibility',label: 'Accessibility (WCAG) improvements', add: 3000 }
       ]},
       { title: 'Extras', items: [
         { k: 'photo',      label: 'Custom illustrations or photography', add: 5000 },
         { k: 'revisions',  label: 'Extra rounds of revisions',           add: 2500 },
         { k: 'training',   label: 'Training on the admin panel',         add: 2000 },
+        { k: 'seo',        label: 'Advanced SEO & structured data',      add: 2500 },
+        { k: 'speed',      label: 'Performance & image optimization',    add: 2000 },
         { k: 'rush',       label: 'Rush delivery',                       add: 4000 }
       ]}
     ];
+
+    /* Commonly-needed items pre-selected per project size. The visitor can
+       still tick or untick anything — these are just a sensible starting point. */
+    var TIER_PRESETS = {
+      small:  ['gdpr'],
+      normal: ['gdpr', 'backups', 'analytics', 'newsletter'],
+      large:  ['login', 'roles', 'gdpr', 'backups', 'accessibility', 'hardening', 'training']
+    };
 
     var calcState = { tier: null, items: {} };
     var catsEl = document.getElementById('calcCategories');
     var estimateValueEl = document.getElementById('estimateValue');
     var getQuoteBtn = document.getElementById('getQuoteBtn');
+
+    var presetNote = document.getElementById('presetNote');
 
     /* Tier cards — reuse the existing .tier / .featured styling for the "selected" look */
     var tierCards = calcTierGrid.querySelectorAll('.tier.selectable');
@@ -228,9 +247,29 @@ document.addEventListener('DOMContentLoaded', function () {
         calcState.tier = card.dataset.tier;
         tierCards.forEach(function (c) { c.classList.remove('featured'); });
         card.classList.add('featured');
+        applyTierPreset(calcState.tier);
         updateEstimate();
       });
     });
+
+    function applyTierPreset(tier) {
+      var preset = TIER_PRESETS[tier] || [];
+      Object.keys(calcState.items).forEach(function (k) {
+        var shouldCheck = preset.indexOf(k) !== -1;
+        calcState.items[k] = shouldCheck;
+        var chk = document.getElementById('calc-' + k);
+        if (chk) {
+          chk.checked = shouldCheck;
+          var row = chk.closest('.calc-row');
+          if (row) row.classList.toggle('checked', shouldCheck);
+        }
+      });
+      if (presetNote) {
+        var tierNames = { small: 'Small', normal: 'Normal', large: 'Large' };
+        presetNote.textContent = 'We\'ve pre-selected the items most ' + tierNames[tier] +
+          ' projects need below — feel free to add or remove anything.';
+      }
+    }
 
     /* Add-on category checklist */
     CATEGORIES.forEach(function (cat) {
@@ -286,6 +325,10 @@ document.addEventListener('DOMContentLoaded', function () {
       return n.toLocaleString('cs-CZ') + ' Kč';
     }
 
+    function fmtKcVat(n) {
+      return Math.round(n * (1 + VAT_RATE)).toLocaleString('cs-CZ') + ' Kč';
+    }
+
     function selectedAddonCount() {
       return Object.keys(calcState.items).filter(function (k) { return calcState.items[k]; }).length;
     }
@@ -300,9 +343,12 @@ document.addEventListener('DOMContentLoaded', function () {
       return labels;
     }
 
+    var estimateValueVatEl = document.getElementById('estimateValueVat');
+
     function updateEstimate() {
       if (!calcState.tier) {
         estimateValueEl.textContent = 'Select a project size above';
+        if (estimateValueVatEl) estimateValueVatEl.textContent = '';
         getQuoteBtn.disabled = true;
         return;
       }
@@ -317,10 +363,14 @@ document.addEventListener('DOMContentLoaded', function () {
       var count = selectedAddonCount();
 
       if (count === 0) {
-        estimateValueEl.textContent = 'from ' + fmtKc(subtotal);
+        estimateValueEl.textContent = 'from ' + fmtKc(subtotal) + ' excl. VAT';
+        if (estimateValueVatEl) estimateValueVatEl.textContent = fmtKcVat(subtotal) + ' incl. 21% VAT';
       } else {
         var high = roundHundred(subtotal * 1.3);
-        estimateValueEl.textContent = fmtKc(subtotal) + ' – ' + fmtKc(high);
+        estimateValueEl.textContent = fmtKc(subtotal) + ' – ' + fmtKc(high) + ' excl. VAT';
+        if (estimateValueVatEl) {
+          estimateValueVatEl.textContent = fmtKcVat(subtotal) + ' – ' + fmtKcVat(high) + ' incl. 21% VAT';
+        }
       }
 
       getQuoteBtn.disabled = false;
