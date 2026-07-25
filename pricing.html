@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description"
-    content="Pricing for freelance web development — one-page sites, multi-page sites with a database, and full platforms with an admin panel. Optional maintenance and consultation.">
+    content="Pricing for freelance web development — pick what your project needs for a rough starting range, then get a fixed quote on a short call.">
   <title>Pricing — Pauwels Freelance</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,13 +38,15 @@
     <main>
       <section class="page">
         <p class="eyebrow">Pricing</p>
-        <h1>Three sizes of project.<br><em>One person</em> building it.</h1>
-        <p class="lede">Every project starts with a short call to confirm what you actually need. The prices below are
-          starting points — you get a fixed quote before any work begins.</p>
+        <h1>Get a feel for<br>your <em>price</em>.</h1>
+        <p class="lede">Every project starts with a short call to confirm what you actually need. Pick what applies
+          below for a rough starting range — you'll get a fixed quote before any work begins.</p>
 
-        <div class="tier-grid">
+        <!-- ===== Step 1: project size ===== -->
+        <h3 class="calc-label">1 — What kind of project is this?</h3>
+        <div class="tier-grid" id="calcTierGrid">
 
-          <div class="tier">
+          <div class="tier selectable" data-tier="small" data-name="Small project — one-page site">
             <div class="tier-tag">Small</div>
             <h3>One-page site</h3>
             <div class="tier-price">from 9 900 Kč<small>fixed price · about 1–2 weeks</small></div>
@@ -55,11 +57,9 @@
               <li>Contact form included</li>
               <li>Basic search-engine setup</li>
             </ul>
-            <a class="btn small" href="contact.html?type=Small%20project%20%E2%80%94%20one-page%20site">Start a small
-              project</a>
           </div>
 
-          <div class="tier featured">
+          <div class="tier selectable" data-tier="normal" data-name="Normal project — multi-page + database">
             <div class="tier-tag">Normal</div>
             <h3>Multi-page + database</h3>
             <div class="tier-price">from 24 900 Kč<small>fixed price · about 3–5 weeks</small></div>
@@ -70,12 +70,9 @@
               <li>Works on phone, tablet and desktop</li>
               <li>Basic search-engine setup</li>
             </ul>
-            <a class="btn small"
-              href="contact.html?type=Normal%20project%20%E2%80%94%20multi-page%20%2B%20database">Start a normal
-              project</a>
           </div>
 
-          <div class="tier">
+          <div class="tier selectable" data-tier="large" data-name="Large project — platform + admin panel">
             <div class="tier-tag">Large</div>
             <h3>Platform + admin panel</h3>
             <div class="tier-price">from 54 900 Kč<small>fixed price · scoped on a call</small></div>
@@ -86,13 +83,24 @@
               <li>User accounts &amp; permissions</li>
               <li>Revisions scoped per project</li>
             </ul>
-            <a class="btn small"
-              href="contact.html?type=Large%20project%20%E2%80%94%20platform%20%2B%20admin%20panel">Start a large
-              project</a>
           </div>
 
         </div>
 
+        <!-- ===== Step 2: add-ons ===== -->
+        <h3 class="calc-label">2 — Anything else you need?</h3>
+        <div id="calcCategories"></div>
+
+        <!-- ===== Estimate ===== -->
+        <div class="estimate-box">
+          <p class="calc-label">Your estimate</p>
+          <div class="estimate-value" id="estimateValue">Select a project size above</div>
+          <p class="estimate-note" id="estimateNote">Rough and indicative — some items may already be covered
+            depending on project size. I'll confirm the exact scope and a fixed price on our call.</p>
+          <button class="btn" id="getQuoteBtn" disabled>Get this quote</button>
+        </div>
+
+        <!-- ===== Hourly add-ons (unchanged) ===== -->
         <div class="addons">
 
           <div class="addon">
