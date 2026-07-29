@@ -162,79 +162,73 @@ document.addEventListener('DOMContentLoaded', function () {
     exp.textContent = text;
   }
 
-  /* ---------- Configurator page: project builder (no pricing shown) ---------- */
+  /* ---------- Configurator page: project builder (no pricing shown) ----------
+     Tiers and add-ons are managed from the admin panel and loaded live from
+     /api/configurator.php, so this page never has hardcoded project data. */
   var calcTierGrid = document.getElementById('calcTierGrid');
   if (calcTierGrid) {
-
-    var CATEGORIES = [
-      { title: 'Accounts & access', items: [
-        { k: 'login',     label: 'User sign-up & login' },
-        { k: 'social',    label: 'Social login (Google, etc.)' },
-        { k: 'roles',     label: 'Roles & permission levels' },
-        { k: 'twofa',     label: 'Extra login security (2FA)' },
-        { k: 'pwreset',   label: 'Self-service password reset' }
-      ]},
-      { title: 'Content & data', items: [
-        { k: 'blog',       label: 'Blog / news section' },
-        { k: 'search',     label: 'Search or filtering across listings' },
-        { k: 'migration',  label: 'Migrating content from an existing site' },
-        { k: 'multilang',  label: 'Multiple languages' },
-        { k: 'cms',        label: 'Editable content via admin panel' },
-        { k: 'analytics',  label: 'Analytics & visitor reporting setup' }
-      ]},
-      { title: 'Integrations', items: [
-        { k: 'payments',      label: 'Online payments' },
-        { k: 'booking',       label: 'Booking / scheduling' },
-        { k: 'newsletter',    label: 'Newsletter or CRM connection' },
-        { k: 'maps',          label: 'Maps or other third-party embeds' },
-        { k: 'emailtemplates',label: 'Custom HTML email templates (branded, tested across clients)' },
-        { k: 'chat',          label: 'Live chat widget' }
-      ]},
-      { title: 'Trust & security', items: [
-        { k: 'hardening',    label: 'Extra security hardening' },
-        { k: 'gdpr',         label: 'GDPR & cookie consent' },
-        { k: 'backups',      label: 'Automated backups' },
-        { k: 'accessibility',label: 'Accessibility (WCAG) improvements' }
-      ]},
-      { title: 'Extras', items: [
-        { k: 'photo',      label: 'Custom illustrations or photography' },
-        { k: 'revisions',  label: 'Extra rounds of revisions' },
-        { k: 'training',   label: 'Training on the admin panel' },
-        { k: 'seo',        label: 'Advanced SEO & structured data' },
-        { k: 'speed',      label: 'Performance & image optimization' },
-        { k: 'rush',       label: 'Rush delivery' }
-      ]}
-    ];
-
-    /* Commonly-needed items pre-selected per project size. The visitor can
-       still tick or untick anything — these are just a sensible starting point. */
-    var TIER_PRESETS = {
-      small:  ['gdpr'],
-      normal: ['gdpr', 'backups', 'analytics', 'newsletter'],
-      large:  ['login', 'roles', 'gdpr', 'backups', 'accessibility', 'hardening', 'training']
-    };
 
     var calcState = { tier: null, items: {} };
     var catsEl = document.getElementById('calcCategories');
     var estimateValueEl = document.getElementById('estimateValue');
     var getQuoteBtn = document.getElementById('getQuoteBtn');
-
     var presetNote = document.getElementById('presetNote');
 
-    /* Tier cards — reuse the existing .tier / .featured styling for the "selected" look */
-    var tierCards = calcTierGrid.querySelectorAll('.tier.selectable');
-    tierCards.forEach(function (card) {
-      card.addEventListener('click', function () {
-        calcState.tier = card.dataset.tier;
-        tierCards.forEach(function (c) { c.classList.remove('featured'); });
-        card.classList.add('featured');
-        applyTierPreset(calcState.tier);
-        updateSummary();
-      });
-    });
+    var TIERS = [];
+    var CATEGORIES = [];
+    var TIER_PRESETS = {};
 
-    function applyTierPreset(tier) {
-      var preset = TIER_PRESETS[tier] || [];
+    fetch('/api/configurator.php')
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        if (data.error) throw new Error(data.error);
+        TIERS = data.tiers || [];
+        CATEGORIES = data.categories || [];
+        TIERS.forEach(function (t) { TIER_PRESETS[t.key] = t.presets || []; });
+        renderTiers();
+        renderCategories();
+        updateSummary();
+      })
+      .catch(function (err) {
+        console.error('Failed to load configurator:', err);
+        calcTierGrid.innerHTML = '<p class="proj-loading">Couldn\'t load the configurator right now — please refresh, or get in touch directly.</p>';
+      });
+
+    function renderTiers() {
+      calcTierGrid.innerHTML = '';
+      TIERS.forEach(function (t) {
+        var card = document.createElement('div');
+        card.className = 'tier selectable';
+        card.dataset.tier = t.key;
+        card.dataset.name = t.fullName;
+
+        var featuresHtml = (t.features || []).map(function (f) {
+          return '<li>' + escapeHtml(f) + '</li>';
+        }).join('');
+
+        card.innerHTML =
+          '<div class="tier-tag">' + escapeHtml(t.tag) + '</div>' +
+          '<h3>' + escapeHtml(t.name) + '</h3>' +
+          (t.durationText ? '<p class="tier-duration">' + escapeHtml(t.durationText) + '</p>' : '') +
+          '<ul>' + featuresHtml + '</ul>';
+
+        card.addEventListener('click', function () {
+          calcState.tier = t.key;
+          calcTierGrid.querySelectorAll('.tier').forEach(function (c) { c.classList.remove('featured'); });
+          card.classList.add('featured');
+          applyTierPreset(t.key);
+          updateSummary();
+        });
+
+        calcTierGrid.appendChild(card);
+      });
+    }
+
+    function applyTierPreset(tierKey) {
+      var preset = TIER_PRESETS[tierKey] || [];
       Object.keys(calcState.items).forEach(function (k) {
         var shouldCheck = preset.indexOf(k) !== -1;
         calcState.items[k] = shouldCheck;
@@ -246,57 +240,60 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       });
       if (presetNote) {
-        var tierNames = { small: 'Small', normal: 'Normal', large: 'Large' };
-        presetNote.textContent = 'We\'ve pre-selected the items most ' + tierNames[tier] +
+        var tier = TIERS.find(function (t) { return t.key === tierKey; });
+        var tierName = tier ? tier.tag : '';
+        presetNote.textContent = 'We\'ve pre-selected the items most ' + tierName +
           ' projects need below — feel free to add or remove anything.';
       }
     }
 
-    /* Add-on category checklist */
-    CATEGORIES.forEach(function (cat) {
-      var block = document.createElement('div');
-      block.className = 'calc-category';
-      var h4 = document.createElement('h4');
-      h4.textContent = cat.title;
-      block.appendChild(h4);
+    function renderCategories() {
+      catsEl.innerHTML = '';
+      CATEGORIES.forEach(function (cat) {
+        var block = document.createElement('div');
+        block.className = 'calc-category';
+        var h4 = document.createElement('h4');
+        h4.textContent = cat.title;
+        block.appendChild(h4);
 
-      cat.items.forEach(function (it) {
-        calcState.items[it.k] = false;
+        (cat.items || []).forEach(function (it) {
+          calcState.items[it.k] = false;
 
-        var row = document.createElement('div');
-        row.className = 'calc-row';
+          var row = document.createElement('div');
+          row.className = 'calc-row';
 
-        var chk = document.createElement('input');
-        chk.type = 'checkbox';
-        chk.id = 'calc-' + it.k;
+          var chk = document.createElement('input');
+          chk.type = 'checkbox';
+          chk.id = 'calc-' + it.k;
 
-        var lbl = document.createElement('label');
-        lbl.setAttribute('for', chk.id);
-        lbl.textContent = it.label;
+          var lbl = document.createElement('label');
+          lbl.setAttribute('for', chk.id);
+          lbl.textContent = it.label;
 
-        row.appendChild(chk);
-        row.appendChild(lbl);
-        block.appendChild(row);
+          row.appendChild(chk);
+          row.appendChild(lbl);
+          block.appendChild(row);
 
-        var toggle = function () {
-          chk.checked = !chk.checked;
-          calcState.items[it.k] = chk.checked;
-          row.classList.toggle('checked', chk.checked);
-          updateSummary();
-        };
-        chk.addEventListener('click', function (e) {
-          e.stopPropagation();
-          calcState.items[it.k] = chk.checked;
-          row.classList.toggle('checked', chk.checked);
-          updateSummary();
+          var toggle = function () {
+            chk.checked = !chk.checked;
+            calcState.items[it.k] = chk.checked;
+            row.classList.toggle('checked', chk.checked);
+            updateSummary();
+          };
+          chk.addEventListener('click', function (e) {
+            e.stopPropagation();
+            calcState.items[it.k] = chk.checked;
+            row.classList.toggle('checked', chk.checked);
+            updateSummary();
+          });
+          row.addEventListener('click', function (e) {
+            if (e.target !== chk) toggle();
+          });
         });
-        row.addEventListener('click', function (e) {
-          if (e.target !== chk) toggle();
-        });
+
+        catsEl.appendChild(block);
       });
-
-      catsEl.appendChild(block);
-    });
+    }
 
     function selectedAddonCount() {
       return Object.keys(calcState.items).filter(function (k) { return calcState.items[k]; }).length;
@@ -305,11 +302,16 @@ document.addEventListener('DOMContentLoaded', function () {
     function selectedAddonLabels() {
       var labels = [];
       CATEGORIES.forEach(function (cat) {
-        cat.items.forEach(function (it) {
+        (cat.items || []).forEach(function (it) {
           if (calcState.items[it.k]) labels.push(it.label);
         });
       });
       return labels;
+    }
+
+    function tierFullName(tierKey) {
+      var tier = TIERS.find(function (t) { return t.key === tierKey; });
+      return tier ? tier.fullName : '';
     }
 
     function updateSummary() {
@@ -319,8 +321,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
       }
 
-      var tierCard = calcTierGrid.querySelector('.tier[data-tier="' + calcState.tier + '"]');
-      var tierName = tierCard.dataset.name;
+      var tierName = tierFullName(calcState.tier);
       var count = selectedAddonCount();
 
       estimateValueEl.textContent = count === 0
@@ -333,8 +334,7 @@ document.addEventListener('DOMContentLoaded', function () {
     getQuoteBtn.addEventListener('click', function () {
       if (!calcState.tier) return;
 
-      var tierCard = calcTierGrid.querySelector('.tier[data-tier="' + calcState.tier + '"]');
-      var tierName = tierCard.dataset.name;
+      var tierName = tierFullName(calcState.tier);
       var addons = selectedAddonLabels();
       var count = addons.length;
 
@@ -353,8 +353,61 @@ document.addEventListener('DOMContentLoaded', function () {
         '&details=' + encodeURIComponent(detailLines.join('\n'));
       window.location.href = url;
     });
+  }
 
-    updateSummary();
+  /* ---------- Portfolio page: load projects from the API ---------- */
+  var projGrid = document.getElementById('projGrid');
+  if (projGrid) {
+    fetch('/api/portfolio.php')
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        if (data.error) throw new Error(data.error);
+        renderProjects(data.projects || []);
+      })
+      .catch(function (err) {
+        console.error('Failed to load portfolio:', err);
+        projGrid.innerHTML = '<p class="proj-loading">Couldn\'t load the portfolio right now — please refresh.</p>';
+      });
+
+    function renderProjects(projects) {
+      projGrid.innerHTML = '';
+      if (!projects.length) {
+        projGrid.innerHTML = '<p class="proj-loading">More work coming soon.</p>';
+        return;
+      }
+      projects.forEach(function (p) {
+        var tagsHtml = (p.tags || []).map(function (t) {
+          return '<span>' + escapeHtml(t) + '</span>';
+        }).join('');
+
+        var proj = document.createElement('div');
+        proj.className = 'proj';
+        proj.innerHTML =
+          '<div class="proj-thumb"><img src="' + escapeAttr(p.image) + '" alt="' +
+          escapeAttr(p.title) + '" loading="lazy" decoding="async"></div>' +
+          '<div class="proj-body">' +
+          '<div class="proj-tags">' + tagsHtml + '</div>' +
+          '<h3>' + escapeHtml(p.title) + '</h3>' +
+          '<p>' + escapeHtml(p.description) + '</p>' +
+          '<a class="btn small" href="contact.html?type=' + encodeURIComponent(p.contactType || p.title) +
+          '">' + escapeHtml(p.ctaText || 'I want something like this') + '</a>' +
+          '</div>';
+        projGrid.appendChild(proj);
+      });
+    }
+  }
+
+  /* ---------- Small helpers shared by the dynamic renderers above ---------- */
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+  function escapeAttr(str) {
+    return escapeHtml(str);
   }
 
 });

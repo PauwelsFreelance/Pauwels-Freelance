@@ -10,4 +10,10 @@ return [
     'mail_to'     => 'info@pauwels-freelance.cz',
     'mail_from'   => 'web@pauwels-freelance.cz',
     'site_name'   => 'Pauwels Freelance',
+
+    // Admin panel database — create this DB via your hosting panel first.
+    'db_host'     => 'localhost',
+    'db_name'     => 'PUT-THE-REAL-DB-NAME-HERE',
+    'db_user'     => 'PUT-THE-REAL-DB-USER-HERE',
+    'db_pass'     => 'PUT-THE-REAL-DB-PASSWORD-HERE',
 ];

@@ -15,11 +15,17 @@ RewriteRule ^(.*)$ https://%1/$1 [R=301,L]
 <Files "config.sample.php">
     Require all denied
 </Files>
-<FilesMatch "\.(md|json|lock|log|sample\.php)$">
+<FilesMatch "\.(md|json|lock|log|sample\.php|sql)$">
     Require all denied
 </FilesMatch>
 RewriteRule ^vendor/ - [F,L]
 RewriteRule ^\.git - [F,L]
+
+# Admin panel: block the CLI-only setup script and internal includes
+# from ever being requested over the web. Login itself is protected by
+# admin/login.php + session auth, not by blocking the /admin/ path.
+RewriteRule ^bin/ - [F,L]
+RewriteRule ^admin/includes/ - [F,L]
 
 DirectoryIndex index.html
 

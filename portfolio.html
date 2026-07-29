@@ -74,47 +74,11 @@
         <p class="lede">Want something like one of these? Click through and the contact form will already know which
           project you're asking about.</p>
 
-        <div class="proj-grid">
-
-          <!-- ===== Project 1 ===== -->
-          <div class="proj">
-            <div class="proj-thumb">
-              <img src="assets/project-1.jpg" alt="Homepage of the Knihovna DEN library website" loading="lazy"
-                decoding="async">
-            </div>
-            <div class="proj-body">
-              <div class="proj-tags">
-                <span>PHP</span><span>SQL</span><span>JavaScript</span><span>CSS</span><span>HTML</span>
-              </div>
-              <h3>Knihovna DEN</h3>
-              <p>Redesigned the library's public website and moved their book management system off MS Access into a
-                browser-based tool the staff can use from anywhere.</p>
-              <a class="btn small" href="contact.html?type=Inquiry%20about%3A%20Knihovna%20DEN">I want something like
-                this</a>
-            </div>
-          </div>
-
-          <!-- ===== Project 2 ===== -->
-          <div class="proj">
-            <div class="proj-thumb">
-              <img src="assets/project-2.jpg" alt="Homepage of the PC Gear price comparison site" loading="lazy"
-                decoding="async">
-            </div>
-            <div class="proj-body">
-              <div class="proj-tags">
-                <span>PHP</span><span>SQL</span><span>JavaScript</span><span>CSS</span><span>HTML</span>
-              </div>
-              <h3>PC Gear</h3>
-              <p>A price-comparison and affiliate site for computers, laptops and components, tracking thousands of
-                products across Czech retailers.</p>
-              <a class="btn small" href="contact.html?type=Inquiry%20about%3A%20PC%20Gear">I want something like this</a>
-            </div>
-          </div>
-
-          <!-- To add a project: copy one whole <div class="proj"> ... </div> block above,
-               drop the screenshot in assets/, and update the text. -->
-
+        <div class="proj-grid" id="projGrid">
+          <p class="proj-loading" id="projLoading">Loading projects…</p>
         </div>
+        <!-- Projects are now managed from the admin panel (/admin/portfolio.php)
+             and loaded here via /api/portfolio.php — see script.js. -->
       </section>
     </main>
 

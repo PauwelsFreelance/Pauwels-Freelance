@@ -5,6 +5,7 @@ use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
 require __DIR__ . '/vendor/autoload.php';
+require __DIR__ . '/admin/includes/db.php';
 $cfg = require __DIR__ . '/config.php';
 
 header('Content-Type: application/json; charset=utf-8');
@@ -36,6 +37,15 @@ if (mb_strlen($name) > 200 || mb_strlen($message) > 5000) fail(422, 'That messag
 $name  = str_replace(["\r", "\n"], ' ', $name);
 $email = str_replace(["\r", "\n"], '',  $email);
 $type  = str_replace(["\r", "\n"], ' ', $type);
+
+/* Store in the database for the admin panel. A DB hiccup should never
+   block the email from going out, so this is isolated in its own try. */
+try {
+    $stmt = db()->prepare('INSERT INTO submissions (name, email, project_type, message) VALUES (?, ?, ?, ?)');
+    $stmt->execute([$name, $email, $type, $message]);
+} catch (Throwable $e) {
+    error_log('Failed to store submission: ' . $e->getMessage());
+}
 
 $mail = new PHPMailer(true);
 try {
