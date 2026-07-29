@@ -58,7 +58,7 @@
       </a>
       <nav class="mainnav" id="mainnav">
         <a href="index.html">About</a>
-        <a href="pricing.html">Pricing</a>
+        <a href="pricing.html">Configurator</a>
         <a href="portfolio.html">Portfolio</a>
         <a href="contact.html" class="active">Contact</a>
       </nav>
@@ -89,21 +89,10 @@
                 <input type="email" id="email" name="email" required autocomplete="email">
               </div>
 
-              <div>
-                <label for="projectType">What are you looking for?</label>
-                <select id="projectType" name="projectType">
-                  <option>Small project — one-page site</option>
-                  <option>Normal project — multi-page + database</option>
-                  <option>Large project — platform + admin panel</option>
-                  <option>Maintenance</option>
-                  <option>Consultation</option>
-                  <option>Not sure yet</option>
-                </select>
-                <div class="field-note" id="unsureNote">
-                  No problem — the first call is free. If we then work out the scope together, that time is billed at the
-                  consultation rate of <b>890 Kč / hour</b>.
-                </div>
-              </div>
+              <!-- Carries the selected configuration/type through from the configurator or a
+                   portfolio "I want something like this" link. Not user-editable — the visitor's
+                   selections already say what they're looking for. -->
+              <input type="hidden" id="projectType" name="projectType" value="">
 
               <div>
                 <label for="message">Project details</label>

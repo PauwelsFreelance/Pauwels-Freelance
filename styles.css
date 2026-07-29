@@ -257,7 +257,7 @@ img.avatar{object-fit:cover;}   /* when the avatar IS the <img> */
 .fact .v{font-size:15px;margin-top:4px;color:var(--text);}
 .about-cta{display:flex;gap:10px;flex-wrap:wrap;margin-top:34px;}
 
-/* ---------- PRICING ---------- */
+/* ---------- CONFIGURATOR ---------- */
 .tier-grid{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -271,8 +271,7 @@ img.avatar{object-fit:cover;}   /* when the avatar IS the <img> */
 .tier.featured h3{color:var(--charcoal);}
 .tier.featured p{color:rgba(47,47,47,.75);}
 .tier.featured .tier-tag{color:rgba(47,47,47,.7);}
-.tier.featured .tier-price{color:var(--charcoal);}
-.tier.featured .tier-price small{color:rgba(47,47,47,.65);}
+.tier.featured .tier-duration{color:rgba(47,47,47,.65);}
 .tier.featured li{color:rgba(47,47,47,.85);border-top-color:rgba(47,47,47,.18);}
 .tier.featured li::before{color:var(--charcoal);}
 .tier.featured .btn{background:var(--charcoal);border-color:var(--charcoal);color:var(--gold);}
@@ -286,40 +285,14 @@ img.avatar{object-fit:cover;}   /* when the avatar IS the <img> */
   color:var(--gold);
   margin-bottom:12px;
 }
-.tier-price{
-  font-family:var(--font-display);
-  font-weight:600;
-  font-size:32px;
-  letter-spacing:.02em;
-  margin:16px 0 20px;
-  color:var(--gold);
-}
-.tier-price small{
+.tier-duration{
   font-family:var(--font-mono);
   font-size:11.5px;
   color:var(--text-45);
-  display:block;
-  margin-top:5px;
+  margin:16px 0 20px;
   font-weight:400;
   letter-spacing:.04em;
   text-transform:none;
-}
-.vat-line{
-  font-family:var(--font-mono);
-  font-size:11.5px;
-  color:var(--text-45);
-  display:block;
-  margin-top:4px;
-  font-weight:400;
-  letter-spacing:.02em;
-  text-transform:none;
-}
-.tier.featured .vat-line{color:rgba(47,47,47,.55);}
-.vat-disclaimer{
-  font-family:var(--font-mono);
-  font-size:12px;
-  color:var(--text-45);
-  margin-top:-8px;
 }
 .preset-note{
   font-family:var(--font-mono);
@@ -349,15 +322,7 @@ img.avatar{object-fit:cover;}   /* when the avatar IS the <img> */
   border-top:none;
 }
 .addon{background:var(--surface-2);padding:28px 26px;}
-.addon .rate{
-  font-family:var(--font-display);
-  font-weight:600;
-  font-size:24px;
-  letter-spacing:.03em;
-  color:var(--gold);
-  margin:10px 0 12px;
-}
-.addon .rate .vat-line{font-size:11.5px;margin-top:6px;}
+.addon h3{margin-bottom:12px;}
 .addon p{font-size:13.5px;}
 
 /* ---------- PORTFOLIO ---------- */
@@ -429,22 +394,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold);}
 select option{background:var(--surface);color:var(--text);}
 textarea{resize:vertical;min-height:130px;}
 input::placeholder,textarea::placeholder{color:var(--text-45);}
-
-/* Conditional disclaimer under the project-type select */
-.field-note{
-  display:none;
-  margin-top:10px;
-  padding:12px 14px;
-  background:var(--surface-2);
-  border-left:3px solid var(--gold);
-  border-radius:var(--radius);
-  font-family:var(--font-mono);
-  font-size:11.5px;
-  line-height:1.6;
-  color:var(--text-70);
-}
-.field-note.show{display:block;}
-.field-note b{color:var(--gold);font-weight:500;}
 
 .contact-side{border-left:1px solid var(--line);padding-left:44px;}
 .contact-side h4{
@@ -553,7 +502,7 @@ footer a{color:var(--gold);text-decoration:none;}
 .form-status.ok{color:var(--gold);}
 .form-status.error{color:#E08A7A;}
 button[disabled]{opacity:.55;cursor:not-allowed;}
-/* ---------- PRICING CALCULATOR ---------- */
+/* ---------- CONFIGURATOR BUILDER ---------- */
 .calc-label{
   font-family:var(--font-mono);
   font-size:11.5px;
@@ -610,12 +559,6 @@ button[disabled]{opacity:.55;cursor:not-allowed;}
   color:var(--gold);
   letter-spacing:.02em;
   margin:0 0 12px;
-}
-.estimate-value-vat{
-  font-family:var(--font-mono);
-  font-size:13px;
-  color:var(--text-45);
-  margin:-6px 0 14px;
 }
 .estimate-note{font-size:13px;color:var(--text-45);max-width:46ch;margin:0 auto 22px;}
 .estimate-box .btn{font-size:12.5px;padding:14px 30px;}
