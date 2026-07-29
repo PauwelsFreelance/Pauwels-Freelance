@@ -14,27 +14,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up PHP + Composer
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.2'
-
-      - name: Install Composer dependencies
-        run: composer install --no-dev --optimize-autoloader
-
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
           echo "${{ secrets.CESKY_HOSTING_SSH_KEY }}" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p 22 irene.thinline.cz >> ~/.ssh/known_hosts
-
-      - name: Commit build artifacts for deploy (local only, never pushed to GitHub)
-        run: |
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
-          git add -f vendor
-          git commit -m "Deploy build $(date -u +%Y-%m-%d_%H:%M:%S)" --allow-empty
 
       - name: Push to Cesky Hosting Git remote
         run: |
