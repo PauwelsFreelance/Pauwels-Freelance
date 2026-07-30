@@ -62,6 +62,22 @@ function clear_failed_logins(): void
     $stmt->execute([client_ip()]);
 }
 
+/** Returns true if this IP has requested too many new accounts recently. */
+function registration_is_throttled(): bool
+{
+    $stmt = db()->prepare(
+        'SELECT COUNT(*) FROM registration_attempts WHERE ip_address = ? AND attempted_at > (NOW() - INTERVAL 1 HOUR)'
+    );
+    $stmt->execute([client_ip()]);
+    return (int)$stmt->fetchColumn() >= 5;
+}
+
+function record_registration_attempt(): void
+{
+    $stmt = db()->prepare('INSERT INTO registration_attempts (ip_address) VALUES (?)');
+    $stmt->execute([client_ip()]);
+}
+
 /** ---------- CSRF ---------- */
 
 function csrf_token(): string
