@@ -20,11 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = trim((string)($_POST['username'] ?? ''));
         $password = (string)($_POST['password'] ?? '');
 
-        $stmt = db()->prepare('SELECT id, password_hash FROM admin_users WHERE username = ?');
+        $stmt = db()->prepare('SELECT id, password_hash, is_confirmed FROM admin_users WHERE username = ?');
         $stmt->execute([$username]);
         $user = $stmt->fetch();
+        $passwordOk = $user && password_verify($password, $user['password_hash']);
 
-        if ($user && password_verify($password, $user['password_hash'])) {
+        if ($passwordOk && !$user['is_confirmed']) {
+            $error = 'This account is awaiting approval. You\'ll be able to log in once it\'s confirmed.';
+        } elseif ($passwordOk) {
             clear_failed_logins();
             session_regenerate_id(true);
             $_SESSION['admin_id'] = (int)$user['id'];
@@ -34,10 +37,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             header('Location: /admin/index.php');
             exit;
+        } else {
+            record_failed_login();
+            $error = 'Incorrect username or password.';
         }
-
-        record_failed_login();
-        $error = 'Incorrect username or password.';
     }
 }
 ?>
@@ -72,6 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       </form>
 
       <a class="back" href="/index.html">← Back to the site</a>
+      <a class="back" href="/admin/register.php">Request an account</a>
     </div>
   </div>
 </body>
