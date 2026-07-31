@@ -2,7 +2,7 @@ name: Notion Backup
 
 on:
   schedule:
-    - cron: '0 0,2,4,6,8,10,12,14,16,18,20,22 * * *'   # 4x/day: 00:00, 06:00, 12:00, 18:00 UTC
+    - cron: '0 */2 * * *'          # every 2 hours
   workflow_dispatch: {}           # lets you trigger it manually from the Actions tab ("Run workflow")
 
 jobs:
@@ -73,3 +73,61 @@ jobs:
                 \"Zip File\": { \"files\": [{ \"type\": \"file_upload\", \"file_upload\": { \"id\": \"${FILE_UPLOAD_ID}\" }, \"name\": \"${ZIP_NAME}\" }] }
               }
             }"
+
+      - name: Prune backups older than 3 days
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          NOTION_VERSION: "2026-03-11"
+        run: |
+          set -e
+
+          # Cutoff is 3 days before the LATEST backup's own timestamp, not
+          # "now" — so a paused schedule doesn't nuke everything the moment
+          # it resumes.
+          LATEST=$(curl -s -X POST "https://api.notion.com/v1/data_sources/${NOTION_DATABASE_ID}/query" \
+            -H "Authorization: Bearer ${NOTION_TOKEN}" \
+            -H "Notion-Version: ${NOTION_VERSION}" \
+            -H "Content-Type: application/json" \
+            -d '{"sorts":[{"property":"Backup Date","direction":"descending"}],"page_size":1}')
+
+          LATEST_DATE=$(echo "$LATEST" | python3 -c "import sys, json; d=json.load(sys.stdin); print(d['results'][0]['properties']['Backup Date']['date']['start'])")
+
+          CUTOFF=$(python3 -c "
+          from datetime import datetime, timedelta
+          d = datetime.fromisoformat('${LATEST_DATE}'.replace('Z', '+00:00'))
+          print((d - timedelta(days=3)).strftime('%Y-%m-%dT%H:%M:%S.000Z'))
+          ")
+
+          echo "Archiving backups older than $CUTOFF"
+
+          CURSOR=""
+          while : ; do
+            if [ -z "$CURSOR" ]; then
+              BODY="{\"filter\":{\"property\":\"Backup Date\",\"date\":{\"before\":\"${CUTOFF}\"}},\"page_size\":50}"
+            else
+              BODY="{\"filter\":{\"property\":\"Backup Date\",\"date\":{\"before\":\"${CUTOFF}\"}},\"page_size\":50,\"start_cursor\":\"${CURSOR}\"}"
+            fi
+
+            RESPONSE=$(curl -s -X POST "https://api.notion.com/v1/data_sources/${NOTION_DATABASE_ID}/query" \
+              -H "Authorization: Bearer ${NOTION_TOKEN}" \
+              -H "Notion-Version: ${NOTION_VERSION}" \
+              -H "Content-Type: application/json" \
+              -d "$BODY")
+
+            IDS=$(echo "$RESPONSE" | python3 -c "import sys, json; d=json.load(sys.stdin); print('\n'.join(r['id'] for r in d.get('results', [])))")
+
+            for ID in $IDS; do
+              [ -z "$ID" ] && continue
+              echo "Archiving old backup page $ID"
+              curl -s -X PATCH "https://api.notion.com/v1/pages/${ID}" \
+                -H "Authorization: Bearer ${NOTION_TOKEN}" \
+                -H "Notion-Version: ${NOTION_VERSION}" \
+                -H "Content-Type: application/json" \
+                -d '{"archived": true}' > /dev/null
+            done
+
+            HAS_MORE=$(echo "$RESPONSE" | python3 -c "import sys, json; print(json.load(sys.stdin).get('has_more', False))")
+            [ "$HAS_MORE" != "True" ] && break
+            CURSOR=$(echo "$RESPONSE" | python3 -c "import sys, json; print(json.load(sys.stdin).get('next_cursor', ''))")
+          done
