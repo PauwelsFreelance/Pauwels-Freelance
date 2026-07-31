@@ -7,6 +7,36 @@ require_login();
 
 $pdo = db();
 
+/** Returns [total, breakdown[]] or [null, []] if no tier_key or it no longer exists. */
+function compute_estimate(PDO $pdo, array $submission): array
+{
+    if (empty($submission['tier_key'])) {
+        return [null, []];
+    }
+    $tierStmt = $pdo->prepare('SELECT full_name, base_price_kc FROM configurator_tiers WHERE tier_key = ?');
+    $tierStmt->execute([$submission['tier_key']]);
+    $tier = $tierStmt->fetch();
+    if (!$tier) {
+        return [null, []];
+    }
+
+    $total = (int)$tier['base_price_kc'];
+    $breakdown = [[$tier['full_name'], (int)$tier['base_price_kc']]];
+
+    $keys = array_filter(array_map('trim', explode(',', (string)$submission['addon_keys'])));
+    if ($keys) {
+        $placeholders = implode(',', array_fill(0, count($keys), '?'));
+        $addonStmt = $pdo->prepare("SELECT label, price_add_kc FROM configurator_addons WHERE addon_key IN ($placeholders)");
+        $addonStmt->execute($keys);
+        foreach ($addonStmt->fetchAll() as $a) {
+            $total += (int)$a['price_add_kc'];
+            $breakdown[] = [$a['label'], (int)$a['price_add_kc']];
+        }
+    }
+
+    return [$total, $breakdown];
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_verify();
     $action = $_POST['action'] ?? '';
@@ -25,6 +55,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $viewId = isset($_GET['view']) ? (int)$_GET['view'] : 0;
 $viewing = null;
+$estimate = null;
+$estimateBreakdown = [];
 if ($viewId > 0) {
     $stmt = $pdo->prepare('SELECT * FROM submissions WHERE id = ?');
     $stmt->execute([$viewId]);
@@ -32,6 +64,9 @@ if ($viewId > 0) {
     if ($viewing && !$viewing['is_read']) {
         $pdo->prepare('UPDATE submissions SET is_read = 1 WHERE id = ?')->execute([$viewId]);
         $viewing['is_read'] = 1;
+    }
+    if ($viewing) {
+        [$estimate, $estimateBreakdown] = compute_estimate($pdo, $viewing);
     }
 }
 
@@ -51,18 +86,36 @@ admin_header('Submissions', 'submissions');
       <tr><th>Received</th><td><?= htmlspecialchars($viewing['created_at'], ENT_QUOTES) ?></td></tr>
       <tr><th>Message</th><td style="white-space:pre-wrap;"><?= htmlspecialchars($viewing['message'], ENT_QUOTES) ?></td></tr>
     </table>
+
+    <?php if ($estimate !== null): ?>
+      <div class="dash-card" style="max-width:420px;margin-bottom:20px;">
+        <div class="l">Estimated price (internal only)</div>
+        <div class="n"><?= number_format($estimate, 0, ',', ' ') ?> Kč</div>
+        <table style="margin-top:14px;">
+          <?php foreach ($estimateBreakdown as [$label, $price]): ?>
+            <tr><td><?= htmlspecialchars($label, ENT_QUOTES) ?></td><td style="text-align:right;"><?= number_format($price, 0, ',', ' ') ?> Kč</td></tr>
+          <?php endforeach; ?>
+        </table>
+      </div>
+    <?php elseif (!empty($viewing['tier_key'])): ?>
+      <div class="flash error">This submission references a tier or add-ons that no longer exist in the configurator — estimate unavailable.</div>
+    <?php else: ?>
+      <p class="hint">Submitted without the configurator, so no estimate is available.</p>
+    <?php endif; ?>
     <a href="/admin/submissions.php">← Back to all submissions</a>
   </div>
 <?php endif; ?>
 
 <div class="section-block">
   <table>
-    <tr><th>Status</th><th>Name</th><th>Interested in</th><th>Received</th><th>Actions</th></tr>
+    <tr><th>Status</th><th>Name</th><th>Interested in</th><th>Estimate</th><th>Received</th><th>Actions</th></tr>
     <?php foreach ($submissions as $s): ?>
+      <?php [$rowEstimate] = compute_estimate($pdo, $s); ?>
       <tr class="<?= $s['is_read'] ? '' : 'unread' ?>">
         <td><span class="badge <?= $s['is_read'] ? 'muted' : 'ok' ?>"><?= $s['is_read'] ? 'Read' : 'New' ?></span></td>
         <td><a href="/admin/submissions.php?view=<?= (int)$s['id'] ?>"><?= htmlspecialchars($s['name'], ENT_QUOTES) ?></a></td>
         <td><?= htmlspecialchars($s['project_type'], ENT_QUOTES) ?></td>
+        <td><?= $rowEstimate !== null ? number_format($rowEstimate, 0, ',', ' ') . ' Kč' : '—' ?></td>
         <td><?= htmlspecialchars($s['created_at'], ENT_QUOTES) ?></td>
         <td class="actions">
           <a href="/admin/submissions.php?view=<?= (int)$s['id'] ?>">View</a>
@@ -81,7 +134,7 @@ admin_header('Submissions', 'submissions');
         </td>
       </tr>
     <?php endforeach; ?>
-    <?php if (!$submissions): ?><tr><td colspan="5">No submissions yet.</td></tr><?php endif; ?>
+    <?php if (!$submissions): ?><tr><td colspan="6">No submissions yet.</td></tr><?php endif; ?>
   </table>
 </div>
 

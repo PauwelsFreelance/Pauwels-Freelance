@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $name     = trim((string)($_POST['name'] ?? ''));
         $fullName = trim((string)($_POST['full_name'] ?? ''));
         $duration = trim((string)($_POST['duration_text'] ?? ''));
+        $basePrice = (int)($_POST['base_price_kc'] ?? 0);
         $sort     = (int)($_POST['sort_order'] ?? 0);
         $published = isset($_POST['is_published']) ? 1 : 0;
         $featuresRaw = (string)($_POST['features'] ?? '');
@@ -31,12 +32,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $pdo->beginTransaction();
             if ($id > 0) {
-                $stmt = $pdo->prepare('UPDATE configurator_tiers SET tier_key=?, tag=?, name=?, full_name=?, duration_text=?, sort_order=?, is_published=? WHERE id=?');
-                $stmt->execute([$tierKey, $tag, $name, $fullName, $duration, $sort, $published, $id]);
+                $stmt = $pdo->prepare('UPDATE configurator_tiers SET tier_key=?, tag=?, name=?, full_name=?, duration_text=?, base_price_kc=?, sort_order=?, is_published=? WHERE id=?');
+                $stmt->execute([$tierKey, $tag, $name, $fullName, $duration, $basePrice, $sort, $published, $id]);
                 $tierId = $id;
             } else {
-                $stmt = $pdo->prepare('INSERT INTO configurator_tiers (tier_key, tag, name, full_name, duration_text, sort_order, is_published) VALUES (?,?,?,?,?,?,?)');
-                $stmt->execute([$tierKey, $tag, $name, $fullName, $duration, $sort, $published]);
+                $stmt = $pdo->prepare('INSERT INTO configurator_tiers (tier_key, tag, name, full_name, duration_text, base_price_kc, sort_order, is_published) VALUES (?,?,?,?,?,?,?,?)');
+                $stmt->execute([$tierKey, $tag, $name, $fullName, $duration, $basePrice, $sort, $published]);
                 $tierId = (int)$pdo->lastInsertId();
             }
 
@@ -94,6 +95,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $categoryId = (int)($_POST['category_id'] ?? 0);
         $key        = trim((string)($_POST['addon_key'] ?? ''));
         $label      = trim((string)($_POST['label'] ?? ''));
+        $priceAdd   = (int)($_POST['price_add_kc'] ?? 0);
         $sort       = (int)($_POST['sort_order'] ?? 0);
 
         if ($categoryId <= 0 || $key === '' || $label === '') {
@@ -102,9 +104,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Add-on key must be lowercase letters, numbers or underscores only.';
         } else {
             if ($id > 0) {
-                $pdo->prepare('UPDATE configurator_addons SET category_id=?, addon_key=?, label=?, sort_order=? WHERE id=?')->execute([$categoryId, $key, $label, $sort, $id]);
+                $pdo->prepare('UPDATE configurator_addons SET category_id=?, addon_key=?, label=?, price_add_kc=?, sort_order=? WHERE id=?')->execute([$categoryId, $key, $label, $priceAdd, $sort, $id]);
             } else {
-                $pdo->prepare('INSERT INTO configurator_addons (category_id, addon_key, label, sort_order) VALUES (?,?,?,?)')->execute([$categoryId, $key, $label, $sort]);
+                $pdo->prepare('INSERT INTO configurator_addons (category_id, addon_key, label, price_add_kc, sort_order) VALUES (?,?,?,?,?)')->execute([$categoryId, $key, $label, $priceAdd, $sort]);
             }
             header('Location: /admin/configurator.php?ok=' . urlencode('Add-on saved.') . '#addons');
             exit;
@@ -195,6 +197,10 @@ admin_header('Configurator', 'configurator');
       </div>
     </div>
 
+    <label for="base_price_kc">Base price, Kč — internal only, never shown to visitors</label>
+    <input type="number" id="base_price_kc" name="base_price_kc" min="0" step="100" value="<?= (int)($editTier['base_price_kc'] ?? 0) ?>">
+    <p class="hint">Used only to compute the estimate you see on a submission — never appears on the public site.</p>
+
     <label for="features">Feature list (one per line)</label>
     <textarea id="features" name="features" style="min-height:130px;"><?= htmlspecialchars(implode("\n", $featuresByTier[$editTier['id'] ?? 0] ?? []), ENT_QUOTES) ?></textarea>
 
@@ -221,13 +227,14 @@ admin_header('Configurator', 'configurator');
   </form>
 
   <table>
-    <tr><th>Order</th><th>Tag</th><th>Name</th><th>Duration</th><th>Status</th><th>Actions</th></tr>
+    <tr><th>Order</th><th>Tag</th><th>Name</th><th>Duration</th><th>Base price</th><th>Status</th><th>Actions</th></tr>
     <?php foreach ($tiers as $t): ?>
       <tr>
         <td><?= (int)$t['sort_order'] ?></td>
         <td><?= htmlspecialchars($t['tag'], ENT_QUOTES) ?></td>
         <td><?= htmlspecialchars($t['name'], ENT_QUOTES) ?></td>
         <td><?= htmlspecialchars($t['duration_text'], ENT_QUOTES) ?></td>
+        <td><?= number_format((int)$t['base_price_kc'], 0, ',', ' ') ?> Kč</td>
         <td><span class="badge <?= $t['is_published'] ? 'ok' : 'muted' ?>"><?= $t['is_published'] ? 'Published' : 'Hidden' ?></span></td>
         <td class="actions">
           <a href="/admin/configurator.php?edit_tier=<?= (int)$t['id'] ?>#tiers">Edit</a>
@@ -294,6 +301,9 @@ admin_header('Configurator', 'configurator');
     <label for="label">Label (shown to visitors)</label>
     <input type="text" id="label" name="label" required value="<?= htmlspecialchars($editAddon['label'] ?? '', ENT_QUOTES) ?>">
 
+    <label for="price_add_kc">Price add-on, Kč — internal only, never shown to visitors</label>
+    <input type="number" id="price_add_kc" name="price_add_kc" min="0" step="100" value="<?= (int)($editAddon['price_add_kc'] ?? 0) ?>">
+
     <div class="actions-row">
       <button type="submit" class="btn"><?= $editAddon ? 'Save changes' : 'Add add-on' ?></button>
       <?php if ($editAddon): ?><a href="/admin/configurator.php#addons">Cancel</a><?php endif; ?>
@@ -303,12 +313,13 @@ admin_header('Configurator', 'configurator');
   <?php foreach ($categories as $c): ?>
     <h2 style="margin-top:30px;font-size:15px;"><?= htmlspecialchars($c['title'], ENT_QUOTES) ?></h2>
     <table style="margin-bottom:20px;">
-      <tr><th>Order</th><th>Key</th><th>Label</th><th>Actions</th></tr>
+      <tr><th>Order</th><th>Key</th><th>Label</th><th>Price add</th><th>Actions</th></tr>
       <?php foreach ($addonsByCategory[$c['id']] ?? [] as $a): ?>
         <tr>
           <td><?= (int)$a['sort_order'] ?></td>
           <td><code><?= htmlspecialchars($a['addon_key'], ENT_QUOTES) ?></code></td>
           <td><?= htmlspecialchars($a['label'], ENT_QUOTES) ?></td>
+          <td><?= number_format((int)$a['price_add_kc'], 0, ',', ' ') ?> Kč</td>
           <td class="actions">
             <a href="/admin/configurator.php?edit_addon=<?= (int)$a['id'] ?>#addons">Edit</a>
             <form method="post" style="display:inline" onsubmit="return confirm('Delete this add-on?');">
@@ -320,7 +331,7 @@ admin_header('Configurator', 'configurator');
           </td>
         </tr>
       <?php endforeach; ?>
-      <?php if (empty($addonsByCategory[$c['id']])): ?><tr><td colspan="4">No add-ons in this category yet.</td></tr><?php endif; ?>
+      <?php if (empty($addonsByCategory[$c['id']])): ?><tr><td colspan="5">No add-ons in this category yet.</td></tr><?php endif; ?>
     </table>
     <form method="post" style="margin-bottom:36px" onsubmit="return confirm('Delete category \'<?= htmlspecialchars($c['title'], ENT_QUOTES) ?>\' and all its add-ons?');">
       <?= csrf_field() ?>

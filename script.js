@@ -49,6 +49,15 @@ document.addEventListener('DOMContentLoaded', function () {
     if (details && messageField && !messageField.value) {
       messageField.value = details;
     }
+
+    /* Carry the exact configurator selection through as hidden fields, so
+       send.php can store a precise tier/add-on record — not just free text. */
+    var tierKeyField = document.getElementById('tierKey');
+    var addonKeysField = document.getElementById('addonKeys');
+    var tierParam = params.get('tier');
+    var addonsParam = params.get('addons');
+    if (tierKeyField && tierParam) tierKeyField.value = tierParam;
+    if (addonKeysField && addonsParam) addonKeysField.value = addonsParam;
   }
 
   /* ---------- Contact form submit ---------- */
@@ -89,12 +98,17 @@ document.addEventListener('DOMContentLoaded', function () {
       submitBtn.disabled = true;
       setStatus('Sending…', '');
 
+      var tierKeyEl = document.getElementById('tierKey');
+      var addonKeysEl = document.getElementById('addonKeys');
+
       var payload = {
         name: name,
         email: email,
         projectType: type,
         message: message,
-        subject: 'New inquiry: ' + type
+        subject: 'New inquiry: ' + type,
+        tierKey: tierKeyEl ? tierKeyEl.value : '',
+        addonKeys: addonKeysEl ? addonKeysEl.value : ''
       };
       if (WEB3FORMS_KEY) payload.access_key = WEB3FORMS_KEY;
 
@@ -336,6 +350,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       var tierName = tierFullName(calcState.tier);
       var addons = selectedAddonLabels();
+      var addonKeys = Object.keys(calcState.items).filter(function (k) { return calcState.items[k]; });
       var count = addons.length;
 
       var typeStr = count === 0
@@ -350,7 +365,9 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       var url = 'contact.html?type=' + encodeURIComponent(typeStr) +
-        '&details=' + encodeURIComponent(detailLines.join('\n'));
+        '&details=' + encodeURIComponent(detailLines.join('\n')) +
+        '&tier=' + encodeURIComponent(calcState.tier) +
+        '&addons=' + encodeURIComponent(addonKeys.join(','));
       window.location.href = url;
     });
   }

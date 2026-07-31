@@ -28,10 +28,17 @@ $name    = trim((string)($data['name'] ?? ''));
 $email   = trim((string)($data['email'] ?? ''));
 $type    = trim((string)($data['projectType'] ?? 'Not specified'));
 $message = trim((string)($data['message'] ?? ''));
+$tierKey    = trim((string)($data['tierKey'] ?? ''));
+$addonKeys  = trim((string)($data['addonKeys'] ?? ''));
 
 if ($name === '' || $email === '' || $message === '') fail(422, 'Please fill in your name, email and a message.');
 if (!filter_var($email, FILTER_VALIDATE_EMAIL))        fail(422, 'That email address is not valid.');
 if (mb_strlen($name) > 200 || mb_strlen($message) > 5000) fail(422, 'That message is too long.');
+
+/* These only ever come from our own configurator JS, but validate the
+   shape anyway before it touches the database. */
+if ($tierKey !== '' && !preg_match('/^[a-z0-9_]+$/', $tierKey)) $tierKey = '';
+if ($addonKeys !== '' && !preg_match('/^[a-z0-9_,]+$/', $addonKeys)) $addonKeys = '';
 
 /* Strip CR/LF from header-bound fields — prevents header injection. */
 $name  = str_replace(["\r", "\n"], ' ', $name);
@@ -41,8 +48,8 @@ $type  = str_replace(["\r", "\n"], ' ', $type);
 /* Store in the database for the admin panel. A DB hiccup should never
    block the email from going out, so this is isolated in its own try. */
 try {
-    $stmt = db()->prepare('INSERT INTO submissions (name, email, project_type, message) VALUES (?, ?, ?, ?)');
-    $stmt->execute([$name, $email, $type, $message]);
+    $stmt = db()->prepare('INSERT INTO submissions (name, email, project_type, message, tier_key, addon_keys) VALUES (?, ?, ?, ?, ?, ?)');
+    $stmt->execute([$name, $email, $type, $message, $tierKey ?: null, $addonKeys ?: null]);
 } catch (Throwable $e) {
     error_log('Failed to store submission: ' . $e->getMessage());
 }
