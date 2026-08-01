@@ -94,9 +94,15 @@ jobs:
           LATEST_DATE=$(echo "$LATEST" | python3 -c "import sys, json; d=json.load(sys.stdin); print(d['results'][0]['properties']['Backup Date']['date']['start'])")
 
           CUTOFF=$(python3 -c "
-          from datetime import datetime, timedelta
+          from datetime import datetime, timedelta, timezone
           d = datetime.fromisoformat('${LATEST_DATE}'.replace('Z', '+00:00'))
-          print((d - timedelta(days=3)).strftime('%Y-%m-%dT%H:%M:%S.000Z'))
+          # Calendar-day cutoff: midnight UTC, 2 days before the latest
+          # backup's date — keeps 'today' plus the 2 previous full days,
+          # i.e. 3 calendar days total. A rolling 72-hour window instead
+          # would spare late-in-the-day entries right at the boundary,
+          # which isn't what '3 days' means in normal conversation.
+          midnight = d.replace(hour=0, minute=0, second=0, microsecond=0)
+          print((midnight - timedelta(days=2)).strftime('%Y-%m-%dT%H:%M:%S.000Z'))
           ")
 
           echo "Archiving backups older than $CUTOFF"
