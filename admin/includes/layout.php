@@ -17,7 +17,10 @@ function admin_header(string $title, string $active): void
 <body>
   <div class="admin-shell">
     <div class="admin-topbar">
-      <div class="admin-brand">Pauwels Freelance — Admin</div>
+      <a class="brand" href="/admin/index.php">
+        <img class="brand-logo" src="/assets/logo.png" alt="Pauwels Freelance">
+        <span class="brand-word">Pauwels Freelance<span>Admin Panel</span></span>
+      </a>
       <nav class="admin-nav">
         <a href="/admin/index.php" class="<?= $active === 'dashboard' ? 'active' : '' ?>">Dashboard</a>
         <a href="/admin/portfolio.php" class="<?= $active === 'portfolio' ? 'active' : '' ?>">Portfolio</a>
