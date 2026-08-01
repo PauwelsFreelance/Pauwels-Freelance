@@ -33,6 +33,7 @@ function admin_footer(): void
 {
     ?>
   </div>
+  <script src="/admin/admin.js"></script>
 </body>
 </html>
     <?php
