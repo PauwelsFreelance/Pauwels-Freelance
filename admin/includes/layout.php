@@ -12,13 +12,13 @@ function admin_header(string $title, string $active): void
   <title><?= htmlspecialchars($title, ENT_QUOTES) ?> — Admin — Pauwels Freelance</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" href="/assets/logo.png">
-  <link rel="stylesheet" href="/admin/admin.css">
+  <link rel="stylesheet" href="/admin/admin.css?v=<?= filemtime(__DIR__ . '/../admin.css') ?>">
 </head>
 <body>
   <div class="admin-shell">
     <div class="admin-topbar">
       <a class="brand" href="/admin/index.php">
-        <img class="brand-logo" src="/assets/logo.png" alt="Pauwels Freelance">
+        <img class="brand-logo" src="/assets/logo.png" alt="Pauwels Freelance" width="40" height="40">
         <span class="brand-word">Pauwels Freelance<span>Admin Panel</span></span>
       </a>
       <nav class="admin-nav">
