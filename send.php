@@ -18,6 +18,19 @@ function fail(int $code, string $msg): void {
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') fail(405, 'Method not allowed.');
 
+/* Reject requests that clearly didn't originate from this site — blocks a
+   malicious page elsewhere from silently auto-submitting this form.
+   Only rejects on an actual mismatch; if a privacy tool strips both
+   headers, we let it through rather than turning away real visitors. */
+$allowedHost = 'pauwels-freelance.cz';
+$origin = $_SERVER['HTTP_ORIGIN'] ?? $_SERVER['HTTP_REFERER'] ?? '';
+if ($origin !== '') {
+    $originHost = parse_url($origin, PHP_URL_HOST);
+    if ($originHost !== $allowedHost && $originHost !== 'www.' . $allowedHost) {
+        fail(403, 'Request rejected.');
+    }
+}
+
 $raw  = file_get_contents('php://input');
 $data = json_decode($raw, true) ?: $_POST;
 
