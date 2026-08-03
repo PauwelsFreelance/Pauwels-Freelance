@@ -573,6 +573,59 @@ button[disabled]{opacity:.55;cursor:not-allowed;}
 .calc-row label{font-size:14px;color:var(--text-70);cursor:pointer;margin:0;}
 .calc-row.checked label{color:var(--text);}
 
+.info-wrap{position:relative;display:inline-flex;margin-left:auto;flex-shrink:0;}
+.info-btn{
+  width:18px;height:18px;
+  border-radius:50%;
+  border:1px solid var(--gold);
+  background:transparent;
+  color:var(--gold);
+  font-family:var(--font-mono);
+  font-size:11px;
+  line-height:1;
+  padding:0;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  transition:background .15s ease,color .15s ease;
+}
+.info-btn:hover,.info-btn:focus-visible{background:var(--gold);color:var(--charcoal);}
+
+.info-tooltip{
+  position:absolute;
+  right:0;
+  top:calc(100% + 8px);
+  width:240px;
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:12px 14px;
+  font-family:var(--font-body);
+  font-size:12.5px;
+  line-height:1.5;
+  color:var(--text-70);
+  box-shadow:0 8px 24px rgba(0,0,0,.35);
+  opacity:0;
+  visibility:hidden;
+  transform:translateY(-4px);
+  transition:opacity .15s ease, transform .15s ease;
+  z-index:30;
+  pointer-events:none;
+}
+.info-wrap:hover .info-tooltip,
+.info-wrap.show .info-tooltip,
+.info-btn:focus-visible ~ .info-tooltip{
+  opacity:1;
+  visibility:visible;
+  transform:translateY(0);
+  pointer-events:auto;
+}
+
+@media (max-width:480px){
+  .info-tooltip{right:auto;left:0;width:200px;}
+}
+
 .estimate-box{
   margin-top:44px;
   background:var(--surface-2);
