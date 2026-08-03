@@ -261,6 +261,60 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
 
+    // Plain-English "what does this give the client" text, used when the
+    // API doesn't yet return an `it.description` for an add-on. Once
+    // configurator_addons has a description column and the admin panel
+    // exposes it, API values take priority automatically — see getDescription().
+    var ADDON_DESCRIPTIONS = {
+      login:          'Visitors can create an account and log back in — needed for gated content, saved preferences or a member area.',
+      social:         'Sign in with Google or Facebook instead of a password — fewer steps for visitors, less password-reset support for you.',
+      roles:          'Different staff members get different access levels in the admin panel, e.g. editor vs. full admin.',
+      twofa:          'An extra login step (a one-time code) that protects admin accounts even if a password leaks.',
+      pwreset:        'Visitors or admins can reset a forgotten password themselves, without emailing you.',
+      blog:           'A news or articles section you can publish to yourself, without touching any code.',
+      search:         'A search box so visitors can find content or products across the site.',
+      migration:      'Moving your existing content — text, images, products — from your current site or files into the new one.',
+      multilang:      'The same site available in more than one language, with a language switcher.',
+      cms:            'A simple editor so you can update text and images yourself after launch, without a full admin panel.',
+      analytics:      'Privacy-friendly visitor analytics — see traffic and trends without a heavy cookie-consent setup.',
+      payments:       'Accept card payments directly on the site, e.g. deposits, product sales or invoices.',
+      booking:        'Visitors can book an appointment, table or slot directly on the site.',
+      newsletter:     'A signup form that adds visitors to your mailing list, ready to connect to your email tool.',
+      maps:           'An embedded map showing your location, with directions.',
+      emailtemplates: 'Branded HTML email templates that render correctly in Gmail, Outlook and Apple Mail.',
+      chat:           'A live chat widget so visitors can message you directly from the site.',
+      hardening:      'Extra server-side security beyond the baseline — rate limiting, stricter headers, brute-force protection.',
+      gdpr:           'A GDPR-compliant privacy policy page explaining what data you collect and why.',
+      backups:        'Automated, scheduled backups of your site and database, so nothing is lost if something breaks.',
+      accessibility:  'A full accessibility pass — screen reader and keyboard-navigation support, meeting WCAG standards.',
+      photo:          'Professional editing and optimization of the images you provide.',
+      revisions:      'An extra round of revisions, beyond what\'s included in your project tier.',
+      training:       'A short walkthrough so you or your team feel confident using the admin panel.',
+      seo:            'Extra on-page SEO work — deeper keyword targeting, meta descriptions and content structure.',
+      speed:          'A dedicated performance pass — image optimization, caching, and load-time improvements.',
+      rush:           'Priority scheduling to get your project delivered faster. Adds 50% to the base price for your tier.',
+      schema:         'Structured data that helps Google show richer results — ratings, prices or business info — for your site.',
+      consent:        'A cookie consent banner with granular opt-in, needed if the site uses tracking or analytics.',
+      a11ystatement:  'A published accessibility statement describing your site\'s compliance level and how to report issues.',
+      monitoring:     'Automated uptime and error monitoring, with an email alert if the site goes down or breaks.',
+      cdn:            'Serves images, fonts and other files from a nearby server, so the site loads faster worldwide.'
+    };
+
+    function getDescription(it) {
+      return it.description || ADDON_DESCRIPTIONS[it.k] || '';
+    }
+
+    function closeAllTooltips(except) {
+      document.querySelectorAll('.info-wrap.show').forEach(function (w) {
+        if (w !== except) w.classList.remove('show');
+      });
+    }
+    // Close any open tooltip when clicking elsewhere, or on Escape.
+    document.addEventListener('click', function () { closeAllTooltips(); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeAllTooltips();
+    });
+
     function renderCategories() {
       catsEl.innerHTML = '';
       CATEGORIES.forEach(function (cat) {
@@ -286,6 +340,37 @@ document.addEventListener('DOMContentLoaded', function () {
 
           row.appendChild(chk);
           row.appendChild(lbl);
+
+          var description = getDescription(it);
+          if (description) {
+            var infoWrap = document.createElement('span');
+            infoWrap.className = 'info-wrap';
+
+            var infoBtn = document.createElement('button');
+            infoBtn.type = 'button';
+            infoBtn.className = 'info-btn';
+            infoBtn.textContent = '?';
+            infoBtn.setAttribute('aria-label', 'What does ' + it.label + ' include?');
+
+            var tooltip = document.createElement('span');
+            tooltip.className = 'info-tooltip';
+            tooltip.id = 'info-' + it.k;
+            tooltip.setAttribute('role', 'tooltip');
+            tooltip.textContent = description;
+            infoBtn.setAttribute('aria-describedby', tooltip.id);
+
+            infoBtn.addEventListener('click', function (e) {
+              e.stopPropagation();
+              var willShow = !infoWrap.classList.contains('show');
+              closeAllTooltips(infoWrap);
+              infoWrap.classList.toggle('show', willShow);
+            });
+
+            infoWrap.appendChild(infoBtn);
+            infoWrap.appendChild(tooltip);
+            row.appendChild(infoWrap);
+          }
+
           block.appendChild(row);
 
           var toggle = function () {
@@ -301,6 +386,7 @@ document.addEventListener('DOMContentLoaded', function () {
             updateSummary();
           });
           row.addEventListener('click', function (e) {
+            if (e.target.closest('.info-wrap')) return; // let the info button handle its own click
             if (e.target !== chk) toggle();
           });
         });
