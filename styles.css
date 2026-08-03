@@ -11,7 +11,7 @@
   --gold-deep:#A98A52;
   --text:#F0EDE6;
   --text-70:rgba(240,237,230,.66);
-  --text-45:rgba(240,237,230,.45);
+  --text-45:rgba(240,237,230,.58);  /* was .45 — bumped for WCAG AA contrast (was ~3.8:1, now ~5:1) */
   --line:rgba(209,177,113,.18);
   --line-soft:rgba(240,237,230,.10);
 
@@ -548,7 +548,7 @@ button[disabled]{opacity:.55;cursor:not-allowed;}
 
 .calc-category{margin-top:28px;}
 .calc-category:first-child{margin-top:0;}
-.calc-category h4{
+.calc-category h3{
   font-family:var(--font-mono);
   font-size:10.5px;
   text-transform:uppercase;
