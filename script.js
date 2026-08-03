@@ -372,6 +372,90 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
+  /* ---------- Configurator page: maintenance & support plans (Step 3) ----------
+     Plans are managed from the admin panel and loaded live from
+     /api/maintenance.php — rename API_URL below if your endpoint differs.
+     Unlike the project configurator, real prices ARE shown here on purpose. */
+  var maintGrid = document.getElementById('maintGrid');
+  if (maintGrid) {
+
+    var MAINT_API_URL = '/api/maintenance.php';
+
+    // Fallback figures if the endpoint isn't reachable — keep in sync with the admin panel.
+    var MAINT_FALLBACK = [
+      {
+        plan_key: 'hourly', name: 'Hourly', plan_type: 'hourly',
+        hours_included: null, price_kc: 750, response_time_text: '1–2 business days',
+        features: ['No commitment, no monthly fee', 'Billed in 15-minute increments', 'Invoiced after work is completed']
+      },
+      {
+        plan_key: 'starter', name: 'Starter', plan_type: 'retainer',
+        hours_included: 2, price_kc: 1300, response_time_text: '1–2 business days',
+        features: ["Unused hours don't roll over", 'Overage billed at the standard hourly rate']
+      },
+      {
+        plan_key: 'standard', name: 'Standard', plan_type: 'retainer',
+        hours_included: 5, price_kc: 3000, response_time_text: '1–2 business days',
+        features: ["Unused hours don't roll over", 'Overage billed at the standard hourly rate']
+      },
+      {
+        plan_key: 'priority', name: 'Priority', plan_type: 'retainer',
+        hours_included: 10, price_kc: 5500, response_time_text: '24 hours',
+        features: ["Unused hours don't roll over", 'Overage billed at the standard hourly rate', 'Faster response time']
+      }
+    ];
+
+    fetch(MAINT_API_URL)
+      .then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        if (data.error) throw new Error(data.error);
+        var plans = data.plans || data;
+        if (!plans || !plans.length) throw new Error('empty');
+        renderMaintenancePlans(plans);
+      })
+      .catch(function (err) {
+        console.error('Failed to load maintenance plans, showing fallback rates:', err);
+        renderMaintenancePlans(MAINT_FALLBACK);
+      });
+
+    function formatKc(n) {
+      return Number(n).toLocaleString('cs-CZ') + ' Kč';
+    }
+
+    function renderMaintenancePlans(plans) {
+      maintGrid.innerHTML = '';
+      plans.forEach(function (p) {
+        var featuresHtml = (p.features || []).map(function (f) {
+          return '<li>' + escapeHtml(f) + '</li>';
+        }).join('');
+
+        var hoursHtml = p.hours_included
+          ? '<div class="maint-hours">' + p.hours_included + ' hour' + (p.hours_included > 1 ? 's' : '') + ' included / month</div>'
+          : '';
+        var responseHtml = p.response_time_text
+          ? '<div class="maint-response">Response time: ' + escapeHtml(p.response_time_text) + '</div>'
+          : '';
+
+        var card = document.createElement('div');
+        card.className = 'maint-card' + (p.plan_key === 'priority' ? ' priority' : '');
+        card.innerHTML =
+          '<div class="tier-tag">' + (p.plan_type === 'hourly' ? 'Pay as you go' : 'Monthly plan') + '</div>' +
+          '<h3>' + escapeHtml(p.name) + '</h3>' +
+          '<div class="maint-price">' + formatKc(p.price_kc) +
+          '<small>' + (p.plan_type === 'hourly' ? 'per hour' : 'per month') + '</small></div>' +
+          hoursHtml + responseHtml +
+          '<ul class="maint-features">' + featuresHtml + '</ul>' +
+          '<a class="btn ghost small" href="contact.html?type=Maintenance&plan=' + encodeURIComponent(p.plan_key) + '">' +
+          (p.plan_type === 'hourly' ? 'Book hourly support' : 'Choose ' + escapeHtml(p.name)) + '</a>';
+
+        maintGrid.appendChild(card);
+      });
+    }
+  }
+
   /* ---------- Portfolio page: load projects from the API ---------- */
   var projGrid = document.getElementById('projGrid');
   if (projGrid) {
