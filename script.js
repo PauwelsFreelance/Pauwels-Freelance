@@ -320,9 +320,9 @@ document.addEventListener('DOMContentLoaded', function () {
       CATEGORIES.forEach(function (cat) {
         var block = document.createElement('div');
         block.className = 'calc-category';
-        var h4 = document.createElement('h4');
-        h4.textContent = cat.title;
-        block.appendChild(h4);
+        var h3cat = document.createElement('h3');
+        h3cat.textContent = cat.title;
+        block.appendChild(h3cat);
 
         (cat.items || []).forEach(function (it) {
           calcState.items[it.k] = false;
